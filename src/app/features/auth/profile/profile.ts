@@ -1,9 +1,19 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { Auth } from '../../../core/services/auth';
 
 @Component({
-  imports: [],
   selector: 'app-profile',
-  styleUrl: './profile.scss',
+  imports: [RouterLink],
   templateUrl: './profile.html',
+  styleUrl: './profile.scss',
 })
-export class Profile {}
+export class Profile {
+  readonly auth = inject(Auth);
+  private readonly router = inject(Router);
+
+  logout(): void {
+    this.auth.logout();
+    void this.router.navigateByUrl('/login');
+  }
+}
