@@ -1,1 +1,72 @@
-<p>login works!</p>
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="brand">
+      <div class="brand-icon">CF</div>
+      <h1>Welcome Back</h1>
+      <p>Sign in to your Campus Finance account</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          autocomplete="username"
+        />
+
+        @if (loginForm.controls.email.touched &&
+             loginForm.controls.email.invalid) {
+          <small class="error">
+            Please enter a valid email address.
+          </small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+        />
+
+        @if (loginForm.controls.password.touched &&
+             loginForm.controls.password.invalid) {
+          <small class="error">
+            Password is required.
+          </small>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="alert" role="alert">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Signing in...' : 'Sign In' }}
+      </button>
+
+    </form>
+
+    <p class="signup-link">
+      Don't have an account?
+      <a routerLink="/signup">Create account</a>
+    </p>
+
+    <div class="demo-note">
+      <strong>Demo Student Account</strong>
+      <p>Email: student&#64;demo.test</p>
+      <p>Password: Student123!</p>
+    </div>
+
+  </div>
+</div>
