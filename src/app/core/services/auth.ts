@@ -55,7 +55,67 @@ export class Auth {
       message: 'Login successful',
     };
   }
+register(
+  fullName: string,
+  email: string,
+  password: string
+): LoginResult {
+  const name = fullName.trim();
+  const normalizedEmail = email.trim().toLowerCase();
 
+  if (name.length < 3) {
+    return {
+      success: false,
+      message: 'Full name must contain at least 3 characters',
+    };
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return {
+      success: false,
+      message: 'Please enter a valid email address',
+    };
+  }
+
+  if (password.length < 8) {
+    return {
+      success: false,
+      message: 'Password must contain at least 8 characters',
+    };
+  }
+
+  const exists = this.demoAccounts.some(
+    account => account.email === normalizedEmail
+  );
+
+  if (exists) {
+    return {
+      success: false,
+      message: 'This email is already registered',
+    };
+  }
+
+  const user: User = {
+    id: 'STU-' + crypto.randomUUID(),
+    fullName: name,
+    email: normalizedEmail,
+    role: 'student',
+  };
+
+  // Demo-only registration.
+  // Do not save or persist the password.
+  this.currentUser.set(user);
+
+  sessionStorage.setItem(
+    this.sessionKey,
+    JSON.stringify(user)
+  );
+
+  return {
+    success: true,
+    message: 'Account created successfully',
+  };
+}
   logout(): void {
     this.currentUser.set(null);
     sessionStorage.removeItem(this.sessionKey);

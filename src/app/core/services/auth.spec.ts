@@ -67,4 +67,52 @@ describe('Auth Service', () => {
 
     expect(restoredService.isLoggedIn()).toBeFalse();
   });
+  it('should register a new student', () => {
+  const result = service.register(
+    'Ahmed Mohamed',
+    'newstudent@example.com',
+    'Student123!'
+  );
+
+  expect(result.success).toBeTrue();
+  expect(service.isLoggedIn()).toBeTrue();
+  expect(service.currentUser()?.fullName)
+    .toBe('Ahmed Mohamed');
+  expect(service.hasRole('student')).toBeTrue();
+});
+
+it('should reject an existing demo email', () => {
+  const result = service.register(
+    'Ahmed Mohamed',
+    'student@demo.test',
+    'Student123!'
+  );
+
+  expect(result.success).toBeFalse();
+  expect(service.isLoggedIn()).toBeFalse();
+});
+
+it('should reject short passwords', () => {
+  const result = service.register(
+    'Ahmed Mohamed',
+    'newstudent@example.com',
+    '123'
+  );
+
+  expect(result.success).toBeFalse();
+});
+
+it('should not store the registration password', () => {
+  service.register(
+    'Ahmed Mohamed',
+    'newstudent@example.com',
+    'Student123!'
+  );
+
+  const saved = sessionStorage.getItem(
+    'campus-finance-demo-user'
+  );
+
+  expect(saved).not.toContain('Student123!');
+});
 });
