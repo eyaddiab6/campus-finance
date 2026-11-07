@@ -1,1 +1,98 @@
-<p>wallet works!</p>
+<main class="wallet-page">
+  <header class="page-heading">
+    <p class="eyebrow">STUDENT SERVICES</p>
+    <h1>Digital Wallet</h1>
+    <p>Manage your campus funds and review recent activity.</p>
+  </header>
+
+  <section class="balance-card" aria-labelledby="balance-title">
+    <div>
+      <p id="balance-title" class="card-label">Available balance</p>
+      <p class="balance">
+        {{ balance | currency: 'EGP' : 'symbol' : '1.2-2' }}
+      </p>
+      <p class="card-note">Your funds are ready to use around campus.</p>
+    </div>
+    <span class="wallet-mark" aria-hidden="true">EGP</span>
+  </section>
+
+  <section class="summary-grid" aria-label="Wallet summary">
+    <article class="summary-card">
+      <p>Total received</p>
+      <strong>{{ received | currency: 'EGP' : 'symbol' : '1.2-2' }}</strong>
+    </article>
+    <article class="summary-card">
+      <p>Total spent</p>
+      <strong>{{ spent | currency: 'EGP' : 'symbol' : '1.2-2' }}</strong>
+    </article>
+  </section>
+
+  <section class="content-grid">
+    <section class="panel top-up-panel" aria-labelledby="top-up-title">
+      <h2 id="top-up-title">Add funds</h2>
+      <p class="panel-description">
+        Add demo funds to your wallet for this session.
+      </p>
+
+      <form (ngSubmit)="addFunds()" novalidate>
+        <label for="top-up-amount">Amount (EGP)</label>
+        <input
+          id="top-up-amount"
+          type="number"
+          min="1"
+          step="1"
+          [formControl]="topUpAmount"
+          placeholder="e.g. 200"
+          aria-describedby="amount-help amount-error"
+        />
+        <small id="amount-help">Enter a positive amount.</small>
+
+        @if (error) {
+          <p id="amount-error" class="feedback error" role="alert">
+            {{ error }}
+          </p>
+        }
+        @if (message) {
+          <p class="feedback success" role="status">{{ message }}</p>
+        }
+
+        <button type="submit">Add funds</button>
+      </form>
+    </section>
+
+    <section class="panel history-panel" aria-labelledby="history-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="history-title">Transaction history</h2>
+          <p class="panel-description">Recent wallet activity</p>
+        </div>
+      </div>
+
+      @if (transactions.length === 0) {
+        <div class="empty-state">
+          <p>No transactions yet</p>
+          <span>Your wallet activity will appear here.</span>
+        </div>
+      } @else {
+        <ul class="transaction-list">
+          @for (transaction of transactions; track transaction.id) {
+            <li class="transaction-row">
+              <div class="transaction-copy">
+                <strong>{{ transaction.description }}</strong>
+                <span>{{ transaction.date | date: 'medium' }}</span>
+              </div>
+              <strong
+                class="transaction-amount"
+                [class.credit]="transaction.type === 'top-up'"
+                [class.debit]="transaction.type === 'purchase'"
+              >
+                {{ transaction.type === 'purchase' ? '−' : '+' }}
+                {{ transaction.amount | currency: 'EGP' : 'symbol' : '1.2-2' }}
+              </strong>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </section>
+</main>
