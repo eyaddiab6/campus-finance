@@ -1,1 +1,117 @@
-<p>meal-plans works!</p>
+<main class="plans-page">
+  <header class="page-heading">
+    <p class="eyebrow">CAMPUS CAFETERIA</p>
+    <h1>Meal Plans</h1>
+    <p>Choose a plan that fits your campus routine.</p>
+  </header>
+
+  @if (error) {
+    <p class="feedback error" role="alert">{{ error }}</p>
+  }
+  @if (message) {
+    <p class="feedback success" role="status">{{ message }}</p>
+  }
+
+  <p class="demo-note">
+    Demo activation only. Plan activation does not create an invoice or charge
+    your wallet while billing integration is pending.
+  </p>
+
+  @if (currentSubscription && currentPlan) {
+    <section class="active-plan" aria-labelledby="active-plan-title">
+      <div>
+        <p class="eyebrow">CURRENT SUBSCRIPTION</p>
+        <h2 id="active-plan-title">{{ currentPlan.name }}</h2>
+        <p>
+          Active until
+          {{ currentSubscription.endDate | date: 'mediumDate' }}
+        </p>
+      </div>
+      <span class="status-pill">Active</span>
+    </section>
+  }
+
+  <section class="plans-section" aria-labelledby="plans-title">
+    <div class="section-heading">
+      <div>
+        <h2 id="plans-title">Available plans</h2>
+        <p>Plan activation is available for the demo student account.</p>
+      </div>
+    </div>
+
+    <div class="plan-grid">
+      @for (plan of plans; track plan.id) {
+        <article class="plan-card">
+          <div class="plan-card-heading">
+            <span class="plan-icon" aria-hidden="true">
+              {{ plan.durationDays === 7 ? '7D' : '30D' }}
+            </span>
+            @if (currentSubscription?.mealPlanId === plan.id) {
+              <span class="status-pill">Current plan</span>
+            }
+          </div>
+
+          <h3>{{ plan.name }}</h3>
+          <p class="plan-description">
+            {{ plan.mealsIncluded }} meals included over
+            {{ plan.durationDays }} days.
+          </p>
+
+          <p class="plan-price">
+            {{ plan.price | currency: 'EGP' : 'symbol' : '1.2-2' }}
+            <span>/ plan</span>
+          </p>
+
+          <button
+            type="button"
+            [disabled]="!!currentSubscription"
+            (click)="activate(plan)"
+          >
+            @if (currentSubscription?.mealPlanId === plan.id) {
+              Active plan
+            } @else if (currentSubscription) {
+              Another plan is active
+            } @else {
+              Activate demo plan
+            }
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="history-section" aria-labelledby="history-title">
+    <div class="section-heading">
+      <div>
+        <h2 id="history-title">Subscription history</h2>
+        <p>Your meal plan activations for this demo account.</p>
+      </div>
+    </div>
+
+    @if (subscriptionHistory.length === 0) {
+      <div class="empty-state">
+        <p>No subscriptions yet</p>
+        <span>Activate a plan to see it in your history.</span>
+      </div>
+    } @else {
+      <ul class="history-list">
+        @for (subscription of subscriptionHistory; track subscription.id) {
+          <li>
+            <div>
+              <strong>{{ getPlanName(subscription.mealPlanId) }}</strong>
+              <span>
+                {{ subscription.startDate | date: 'mediumDate' }}
+                – {{ subscription.endDate | date: 'mediumDate' }}
+              </span>
+            </div>
+            @if (currentSubscription?.id === subscription.id) {
+              <span class="status-pill">Active</span>
+            } @else {
+              <span class="status-pill ended">Ended</span>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</main>
