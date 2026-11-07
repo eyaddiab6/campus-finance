@@ -1,304 +1,138 @@
-
 <main class="min-h-screen bg-canvas px-4 py-8 md:px-8">
-  <section class="mx-auto max-w-6xl">
+  <div class="mx-auto max-w-6xl">
+    <nav class="mb-6 flex flex-wrap items-center gap-4 text-sm" aria-label="Page navigation">
+      <a routerLink="/" class="font-semibold text-primary hover:underline">← Campus Finance</a>
+      <a routerLink="/profile" class="text-body hover:text-primary">My profile</a>
+    </nav>
 
     <header class="mb-8">
-      <p class="mb-2 text-sm font-semibold text-primary">
-        Campus Finance / Financial Services
-      </p>
-
+      <p class="mb-2 text-sm font-semibold text-primary">Campus Finance / Financial Services</p>
       <h1 class="text-3xl font-bold text-heading">
         {{ canManageInvoices() ? 'Invoice Management' : 'My Student Fees' }}
       </h1>
-
       <p class="mt-2 text-muted">
         @if (canManageInvoices()) {
-          Review and manage student invoices.
+          Review invoices and record demo payments.
         } @else {
-          Track your tuition fees and cafeteria subscriptions.
+          Track tuition fees and cafeteria subscriptions.
         }
       </p>
     </header>
 
-    <div class="mb-8 grid gap-4 sm:grid-cols-3">
-
+    <section class="mb-8 grid gap-4 sm:grid-cols-3" aria-label="Invoice totals">
       <article class="rounded-2xl border border-outline bg-surface p-6 shadow-sm">
         <p class="text-sm font-medium text-muted">Total Fees</p>
-        <p class="mt-3 text-2xl font-bold text-heading">
-          {{ totalAmount() | number:'1.0-2' }}
-          <span class="text-sm font-medium text-muted">EGP</span>
-        </p>
+        <p class="mt-3 text-2xl font-bold text-heading">{{ totalAmount() | number:'1.0-2' }} <span class="text-sm font-medium text-muted">EGP</span></p>
       </article>
-
       <article class="rounded-2xl border border-outline bg-surface p-6 shadow-sm">
         <p class="text-sm font-medium text-muted">Amount Paid</p>
-        <p class="mt-3 text-2xl font-bold text-success">
-          {{ paidAmount() | number:'1.0-2' }}
-          <span class="text-sm font-medium">EGP</span>
-        </p>
+        <p class="mt-3 text-2xl font-bold text-success">{{ paidAmount() | number:'1.0-2' }} <span class="text-sm font-medium">EGP</span></p>
       </article>
-
       <article class="rounded-2xl border border-outline bg-surface p-6 shadow-sm">
         <p class="text-sm font-medium text-muted">Outstanding Fees</p>
-        <p class="mt-3 text-2xl font-bold text-danger">
-          {{ unpaidAmount() | number:'1.0-2' }}
-          <span class="text-sm font-medium">EGP</span>
-        </p>
+        <p class="mt-3 text-2xl font-bold text-danger">{{ unpaidAmount() | number:'1.0-2' }} <span class="text-sm font-medium">EGP</span></p>
       </article>
+    </section>
 
-    </div>
+    @if (successMessage()) {
+      <p class="mb-5 rounded-lg bg-success-soft p-4 text-sm text-success" role="status" aria-live="polite">{{ successMessage() }}</p>
+    }
+    @if (invoiceError()) {
+      <p class="mb-5 rounded-lg bg-danger-soft p-4 text-sm text-danger" role="alert">{{ invoiceError() }}</p>
+    }
 
-@if (canManageInvoices()) {
-  <section class="mb-8 rounded-2xl border border-outline bg-surface p-6 shadow-sm">
+    @if (canManageInvoices()) {
+      <section class="mb-8 rounded-2xl border border-outline bg-surface p-6 shadow-sm" aria-labelledby="create-heading">
+        <h2 id="create-heading" class="text-xl font-bold text-heading">Create New Invoice</h2>
+        <p class="mb-6 mt-1 text-sm text-muted">Add a demo tuition or meal-plan charge to a student.</p>
+        <form [formGroup]="invoiceForm" (ngSubmit)="addInvoice()" class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label for="studentId" class="mb-2 block text-sm font-medium">Student ID</label>
+            <input id="studentId" formControlName="studentId" placeholder="STU001" class="w-full rounded-lg border border-outline bg-white p-3">
+            @if (invoiceForm.controls.studentId.touched && invoiceForm.controls.studentId.invalid) {
+              <p class="mt-1 text-sm text-danger">Enter a Student ID of at least 3 characters.</p>
+            }
+          </div>
+          <div>
+            <label for="invoiceType" class="mb-2 block text-sm font-medium">Invoice Type</label>
+            <select id="invoiceType" formControlName="type" class="w-full rounded-lg border border-outline bg-white p-3">
+              <option value="tuition">Tuition</option>
+              <option value="meal-plan">Meal Plan</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label for="description" class="mb-2 block text-sm font-medium">Description</label>
+            <input id="description" formControlName="description" placeholder="Spring Semester Tuition" class="w-full rounded-lg border border-outline bg-white p-3">
+            @if (invoiceForm.controls.description.touched && invoiceForm.controls.description.invalid) {
+              <p class="mt-1 text-sm text-danger">Description must contain at least 3 characters.</p>
+            }
+          </div>
+          <div>
+            <label for="amount" class="mb-2 block text-sm font-medium">Amount (EGP)</label>
+            <input id="amount" type="number" min="0.01" step="0.01" formControlName="amount" class="w-full rounded-lg border border-outline bg-white p-3">
+            @if (invoiceForm.controls.amount.touched && invoiceForm.controls.amount.invalid) {
+              <p class="mt-1 text-sm text-danger">Amount must be greater than zero.</p>
+            }
+          </div>
+          <div>
+            <label for="dueDate" class="mb-2 block text-sm font-medium">Due Date</label>
+            <input id="dueDate" type="date" formControlName="dueDate" class="w-full rounded-lg border border-outline bg-white p-3">
+            @if (invoiceForm.controls.dueDate.touched && invoiceForm.controls.dueDate.invalid) {
+              <p class="mt-1 text-sm text-danger">Choose a valid due date.</p>
+            }
+          </div>
+          <div class="md:col-span-2">
+            <button type="submit" class="rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-hover">Create Invoice</button>
+          </div>
+        </form>
+      </section>
+    }
 
-    <div class="mb-6">
-      <h2 class="text-xl font-bold text-heading">
-        Create New Invoice
-      </h2>
-      <p class="mt-1 text-sm text-muted">
-        Add a new tuition or meal-plan invoice.
-      </p>
-    </div>
-
-    <form
-      [formGroup]="invoiceForm"
-      (ngSubmit)="addInvoice()"
-      class="grid gap-4 md:grid-cols-2"
-    >
-
-      <div>
-        <label for="studentId" class="mb-2 block text-sm font-medium text-body">
-          Student ID
-        </label>
-        <input
-          id="studentId"
-          formControlName="studentId"
-          placeholder="STU001"
-          class="w-full rounded-lg border border-outline bg-white p-3"
-        />
-
-        @if (
-          invoiceForm.controls.studentId.touched &&
-          invoiceForm.controls.studentId.invalid
-        ) {
-          <p class="mt-1 text-sm text-danger">
-            Enter a valid Student ID.
-          </p>
-        }
-      </div>
-
-      <div>
-        <label for="invoiceType" class="mb-2 block text-sm font-medium text-body">
-          Invoice Type
-        </label>
-        <select
-          id="invoiceType"
-          formControlName="type"
-          class="w-full rounded-lg border border-outline bg-white p-3"
-        >
-          <option value="tuition">Tuition</option>
-          <option value="meal-plan">Meal Plan</option>
-        </select>
-      </div>
-
-      <div class="md:col-span-2">
-        <label for="description" class="mb-2 block text-sm font-medium text-body">
-          Description
-        </label>
-        <input
-          id="description"
-          formControlName="description"
-          placeholder="e.g. Spring Semester Tuition"
-          class="w-full rounded-lg border border-outline bg-white p-3"
-        />
-
-        @if (
-          invoiceForm.controls.description.touched &&
-          invoiceForm.controls.description.invalid
-        ) {
-          <p class="mt-1 text-sm text-danger">
-            Description must contain at least 3 characters.
-          </p>
-        }
-      </div>
-
-      <div>
-        <label for="amount" class="mb-2 block text-sm font-medium text-body">
-          Amount (EGP)
-        </label>
-        <input
-          id="amount"
-          type="number"
-          min="0.01"
-          step="0.01"
-          formControlName="amount"
-          class="w-full rounded-lg border border-outline bg-white p-3"
-        />
-
-        @if (
-          invoiceForm.controls.amount.touched &&
-          invoiceForm.controls.amount.invalid
-        ) {
-          <p class="mt-1 text-sm text-danger">
-            Amount must be greater than zero.
-          </p>
-        }
-      </div>
-
-      <div>
-        <label for="dueDate" class="mb-2 block text-sm font-medium text-body">
-          Due Date
-        </label>
-        <input
-          id="dueDate"
-          type="date"
-          formControlName="dueDate"
-          class="w-full rounded-lg border border-outline bg-white p-3"
-        />
-
-        @if (
-          invoiceForm.controls.dueDate.touched &&
-          invoiceForm.controls.dueDate.invalid
-        ) {
-          <p class="mt-1 text-sm text-danger">
-            Due date is required.
-          </p>
-        }
-      </div>
-
-      @if (invoiceError()) {
-        <p
-          class="md:col-span-2 rounded-lg bg-danger-soft p-3 text-sm text-danger"
-          role="alert"
-        >
-          {{ invoiceError() }}
-        </p>
-      }
-
-      <div class="md:col-span-2">
-        <button
-          type="submit"
-          class="rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-hover"
-        >
-          Create Invoice
-        </button>
-      </div>
-
-    </form>
-  </section>
-}
-
-    <div class="overflow-hidden rounded-2xl border border-outline bg-surface shadow-sm">
-
+    <section class="overflow-hidden rounded-2xl border border-outline bg-surface shadow-sm" aria-labelledby="invoices-heading">
       <div class="flex flex-col gap-4 border-b border-outline p-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 class="text-xl font-bold text-heading">Invoices</h2>
-          <p class="mt-1 text-sm text-muted">
-            {{ filteredInvoices().length }} invoice(s) found
-          </p>
+          <h2 id="invoices-heading" class="text-xl font-bold text-heading">Invoices</h2>
+          <p class="mt-1 text-sm text-muted">{{ filteredInvoices().length }} invoice(s) found</p>
         </div>
-
         <div class="flex flex-col gap-3 sm:flex-row">
-          <input
-            type="search"
-            aria-label="Search invoices"
-            placeholder="Search invoices..."
-            [value]="searchQuery()"
-            (input)="updateSearch($event)"
-            class="rounded-lg border border-outline bg-white px-4 py-3 text-body outline-none focus:border-primary"
-          />
-
-          <select
-            aria-label="Filter invoice status"
-            [value]="statusFilter()"
-            (change)="updateStatus($event)"
-            class="rounded-lg border border-outline bg-white px-4 py-3 text-body outline-none focus:border-primary"
-          >
-            <option value="all">All Statuses</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
+          <input type="search" aria-label="Search invoices" placeholder="Search invoices..." [value]="searchQuery()" (input)="updateSearch($event)"
+            class="rounded-lg border border-outline bg-white px-4 py-3 text-body outline-none focus:border-primary">
+          <select aria-label="Filter invoice status" [value]="statusFilter()" (change)="updateStatus($event)"
+            class="rounded-lg border border-outline bg-white px-4 py-3 text-body outline-none focus:border-primary">
+            <option value="all">All Statuses</option><option value="paid">Paid</option><option value="unpaid">Unpaid</option>
           </select>
         </div>
       </div>
-
-      @if (successMessage()) {
-        <p class="m-4 rounded-lg bg-success-soft p-4 text-sm text-success"
-           role="status">
-          {{ successMessage() }}
-        </p>
-      }
-
       @if (filteredInvoices().length > 0) {
         <div class="overflow-x-auto">
           <table class="w-full min-w-[760px] text-left text-sm">
-            <thead class="bg-surface-muted text-muted">
-              <tr>
-                <th class="px-6 py-4 font-semibold">Invoice</th>
-                <th class="px-6 py-4 font-semibold">Student ID</th>
-                <th class="px-6 py-4 font-semibold">Type</th>
-                <th class="px-6 py-4 font-semibold">Due Date</th>
-                <th class="px-6 py-4 font-semibold">Amount</th>
-                <th class="px-6 py-4 font-semibold">Status</th>
-
-                @if (canManageInvoices()) {
-                  <th class="px-6 py-4 font-semibold">Action</th>
-                }
-              </tr>
-            </thead>
-
+            <thead class="bg-surface-muted text-muted"><tr>
+              <th scope="col" class="px-6 py-4">Invoice</th><th scope="col" class="px-6 py-4">Student ID</th>
+              <th scope="col" class="px-6 py-4">Type</th><th scope="col" class="px-6 py-4">Due Date</th>
+              <th scope="col" class="px-6 py-4">Amount</th><th scope="col" class="px-6 py-4">Status</th>
+              @if (canManageInvoices()) { <th scope="col" class="px-6 py-4">Action</th> }
+            </tr></thead>
             <tbody>
               @for (invoice of filteredInvoices(); track invoice.id) {
                 <tr class="border-t border-outline">
-                  <td class="px-6 py-4">
-                    <p class="font-semibold text-heading">
-                      {{ invoice.description }}
-                    </p>
-                    <p class="mt-1 text-xs text-muted">
-                      {{ invoice.id }}
-                    </p>
-                  </td>
-
-                  <td class="px-6 py-4 text-body">
-                    {{ invoice.studentId }}
-                  </td>
-
-                  <td class="px-6 py-4 capitalize text-body">
-                    {{ invoice.type === 'meal-plan' ? 'Meal Plan' : 'Tuition' }}
-                  </td>
-
-                  <td class="px-6 py-4 text-body">
-                    {{ invoice.dueDate }}
-                  </td>
-
-                  <td class="px-6 py-4 font-semibold text-heading">
-                    {{ invoice.amount | number:'1.0-2' }} EGP
-                  </td>
-
+                  <td class="px-6 py-4"><p class="font-semibold text-heading">{{ invoice.description }}</p><p class="mt-1 text-xs text-muted">{{ invoice.id }}</p></td>
+                  <td class="px-6 py-4 text-body">{{ invoice.studentId }}</td>
+                  <td class="px-6 py-4 text-body">{{ invoice.type === 'meal-plan' ? 'Meal Plan' : 'Tuition' }}</td>
+                  <td class="px-6 py-4 text-body">{{ invoice.dueDate }}</td>
+                  <td class="px-6 py-4 font-semibold text-heading">{{ invoice.amount | number:'1.0-2' }} EGP</td>
                   <td class="px-6 py-4">
                     @if (invoice.status === 'paid') {
-                      <span class="rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">
-                        Paid
-                      </span>
+                      <span class="rounded-full bg-success-soft px-3 py-1 text-xs font-semibold text-success">Paid</span>
                     } @else {
-                      <span class="rounded-full bg-danger-soft px-3 py-1 text-xs font-semibold text-danger">
-                        Unpaid
-                      </span>
+                      <span class="rounded-full bg-danger-soft px-3 py-1 text-xs font-semibold text-danger">Unpaid</span>
                     }
                   </td>
-
                   @if (canManageInvoices()) {
                     <td class="px-6 py-4">
                       @if (invoice.status === 'unpaid') {
-                        <button
-                          type="button"
-                          (click)="markAsPaid(invoice.id)"
-                          class="rounded-lg bg-primary px-4 py-2 font-medium text-white hover:bg-primary-hover"
-                        >
-                          Mark as Paid
-                        </button>
-                      } @else {
-                        <span class="text-muted">Completed</span>
-                      }
+                        <button type="button" (click)="markAsPaid(invoice.id)" [attr.aria-label]="'Mark invoice ' + invoice.id + ' as paid'"
+                          class="rounded-lg bg-primary px-4 py-2 font-medium text-white hover:bg-primary-hover">Mark as Paid</button>
+                      } @else { <span class="text-muted">Completed</span> }
                     </td>
                   }
                 </tr>
@@ -307,20 +141,42 @@
           </table>
         </div>
       } @else {
-        <div class="px-6 py-16 text-center">
-          <h3 class="text-lg font-semibold text-heading">
-            No invoices found
-          </h3>
-          <p class="mt-2 text-sm text-muted">
-            No invoices match your account or current filters.
-          </p>
-        </div>
+        <div class="px-6 py-16 text-center"><h3 class="text-lg font-semibold text-heading">No invoices found</h3>
+          <p class="mt-2 text-sm text-muted">No invoices match your account or current filters.</p></div>
       }
-    </div>
+    </section>
 
-    <p class="mt-5 text-center text-xs text-muted">
-      Demo financial data only. No real payments are processed.
-    </p>
-
-  </section>
+    <section class="mt-8 overflow-hidden rounded-2xl border border-outline bg-surface shadow-sm" aria-labelledby="history-heading">
+      <div class="border-b border-outline p-6">
+        <h2 id="history-heading" class="text-xl font-bold text-heading">Payment History</h2>
+        <p class="mt-1 text-sm text-muted">Recorded demo payments. Newest first.</p>
+      </div>
+      @if (visiblePayments().length > 0) {
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[680px] text-left text-sm">
+            <thead class="bg-surface-muted text-muted"><tr>
+              <th scope="col" class="px-6 py-4">Payment ID</th><th scope="col" class="px-6 py-4">Invoice ID</th>
+              <th scope="col" class="px-6 py-4">Student ID</th><th scope="col" class="px-6 py-4">Amount</th>
+              <th scope="col" class="px-6 py-4">Recorded At</th>
+              @if (canManageInvoices()) { <th scope="col" class="px-6 py-4">Recorded By</th> }
+            </tr></thead>
+            <tbody>
+              @for (payment of visiblePayments(); track payment.id) {
+                <tr class="border-t border-outline text-body">
+                  <td class="px-6 py-4 font-medium">{{ payment.id }}</td><td class="px-6 py-4">{{ payment.invoiceId }}</td>
+                  <td class="px-6 py-4">{{ payment.studentId }}</td>
+                  <td class="px-6 py-4 font-semibold">{{ payment.amount | number:'1.0-2' }} EGP</td>
+                  <td class="px-6 py-4">{{ payment.paidAt | date:'medium' }}</td>
+                  @if (canManageInvoices()) { <td class="px-6 py-4">{{ payment.recordedBy }}</td> }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="px-6 py-12 text-center text-sm text-muted">No demo payments have been recorded for this account.</div>
+      }
+    </section>
+    <p class="mt-6 text-center text-xs text-muted">Demo data only. No real money is moved; changes reset when the app reloads.</p>
+  </div>
 </main>
