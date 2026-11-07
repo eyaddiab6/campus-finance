@@ -1,5 +1,6 @@
+
 import { Injectable, signal } from '@angular/core';
-import { User } from '../models/campus.models';
+import type { User } from '../models/campus.models';
 
 export interface LoginResult {
   success: boolean;
@@ -11,6 +12,7 @@ export interface LoginResult {
 })
 export class Auth {
   private readonly sessionKey = 'campus-finance-demo-user';
+  private readonly registrationKey = 'campus-finance-demo-registration';
 
   // Demo credentials only — never use real passwords.
   private readonly demoAccounts = [
@@ -28,7 +30,7 @@ export class Auth {
 
   login(email: string, password: string): LoginResult {
     const account = this.demoAccounts.find(
-      item =>
+      (item) =>
         item.email === email.trim().toLowerCase() &&
         item.password === password
     );
@@ -50,75 +52,88 @@ export class Auth {
     this.currentUser.set(user);
     sessionStorage.setItem(this.sessionKey, JSON.stringify(user));
 
+    // Remove any previous temporary registration.
+    sessionStorage.removeItem(this.registrationKey);
+
     return {
       success: true,
       message: 'Login successful',
     };
   }
-register(
-  fullName: string,
-  email: string,
-  password: string
-): LoginResult {
-  const name = fullName.trim();
-  const normalizedEmail = email.trim().toLowerCase();
 
-  if (name.length < 3) {
+  register(
+    fullName: string,
+    email: string,
+    password: string
+  ): LoginResult {
+    const name = fullName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (name.length < 3) {
+      return {
+        success: false,
+        message: 'Full name must contain at least 3 characters',
+      };
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return {
+        success: false,
+        message: 'Please enter a valid email address',
+      };
+    }
+
+    if (password.length < 8) {
+      return {
+        success: false,
+        message: 'Password must contain at least 8 characters',
+      };
+    }
+
+    const exists = this.demoAccounts.some(
+      (account) => account.email === normalizedEmail
+    );
+
+    if (exists) {
+      return {
+        success: false,
+        message: 'This email is already registered',
+      };
+    }
+
+    const user: User = {
+      id: 'STU-' + crypto.randomUUID(),
+      fullName: name,
+      email: normalizedEmail,
+      role: 'student',
+    };
+
+    // Frontend demo only. Never persist the password.
+    this.currentUser.set(user);
+
+    sessionStorage.setItem(
+      this.sessionKey,
+      JSON.stringify(user)
+    );
+
+    sessionStorage.setItem(
+      this.registrationKey,
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+      })
+    );
+
     return {
-      success: false,
-      message: 'Full name must contain at least 3 characters',
+      success: true,
+      message: 'Account created successfully',
     };
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-    return {
-      success: false,
-      message: 'Please enter a valid email address',
-    };
-  }
-
-  if (password.length < 8) {
-    return {
-      success: false,
-      message: 'Password must contain at least 8 characters',
-    };
-  }
-
-  const exists = this.demoAccounts.some(
-    account => account.email === normalizedEmail
-  );
-
-  if (exists) {
-    return {
-      success: false,
-      message: 'This email is already registered',
-    };
-  }
-
-  const user: User = {
-    id: 'STU-' + crypto.randomUUID(),
-    fullName: name,
-    email: normalizedEmail,
-    role: 'student',
-  };
-
-  // Demo-only registration.
-  // Do not save or persist the password.
-  this.currentUser.set(user);
-
-  sessionStorage.setItem(
-    this.sessionKey,
-    JSON.stringify(user)
-  );
-
-  return {
-    success: true,
-    message: 'Account created successfully',
-  };
-}
   logout(): void {
     this.currentUser.set(null);
     sessionStorage.removeItem(this.sessionKey);
+    sessionStorage.removeItem(this.registrationKey);
   }
 
   isLoggedIn(): boolean {
@@ -132,13 +147,34 @@ register(
   private restoreSession(): void {
     try {
       const saved = sessionStorage.getItem(this.sessionKey);
-      if (!saved) return;
 
-      const user = JSON.parse(saved) as User;
+      if (!saved) {
+        sessionStorage.removeItem(this.registrationKey);
+        return;
+      }
 
-      // Validate against known demo accounts.
+      const user: unknown = JSON.parse(saved);
+
+      if (
+        !user ||
+        typeof user !== 'object' ||
+        !('id' in user) ||
+        !('fullName' in user) ||
+        !('email' in user) ||
+        !('role' in user) ||
+        typeof user.id !== 'string' ||
+        typeof user.fullName !== 'string' ||
+        typeof user.email !== 'string' ||
+        typeof user.role !== 'string'
+      ) {
+        throw new Error('Invalid session');
+      }
+
+      // Restore an existing demo account.
       const account = this.demoAccounts.find(
-        item => item.email === user.email && item.role === user.role
+        (item) =>
+          item.email === user.email &&
+          item.role === user.role
       );
 
       if (account) {
@@ -148,11 +184,47 @@ register(
           email: account.email,
           role: account.role,
         });
-      } else {
-        sessionStorage.removeItem(this.sessionKey);
+
+        sessionStorage.removeItem(this.registrationKey);
+        return;
       }
+
+      // Restore a temporarily registered student.
+      const savedRegistration = sessionStorage.getItem(
+        this.registrationKey
+      );
+
+      if (!savedRegistration) {
+        throw new Error('Registration not found');
+      }
+
+      const registration: unknown = JSON.parse(savedRegistration);
+
+      if (
+        !registration ||
+        typeof registration !== 'object' ||
+        !('id' in registration) ||
+        !('email' in registration) ||
+        registration.id !== user.id ||
+        registration.email !== user.email ||
+        user.role !== 'student' ||
+        !user.id.startsWith('STU-') ||
+        user.fullName.trim().length < 3 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)
+      ) {
+        throw new Error('Invalid registered student session');
+      }
+
+      this.currentUser.set({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: 'student',
+      });
     } catch {
+      this.currentUser.set(null);
       sessionStorage.removeItem(this.sessionKey);
+      sessionStorage.removeItem(this.registrationKey);
     }
   }
 }

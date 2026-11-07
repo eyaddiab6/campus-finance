@@ -115,4 +115,76 @@ it('should not store the registration password', () => {
 
   expect(saved).not.toContain('Student123!');
 });
+it('should restore a registered student after refresh', () => {
+  const auth = new Auth();
+
+  const result = auth.register(
+    'Ahmed Mohamed',
+    'ahmed.refresh@example.com',
+    'Student123!'
+  );
+
+  expect(result.success).toBeTrue();
+
+  // Simulate a new Auth instance after page refresh.
+  const restoredAuth = new Auth();
+
+  expect(restoredAuth.isLoggedIn()).toBeTrue();
+  expect(restoredAuth.currentUser()?.fullName)
+    .toBe('Ahmed Mohamed');
+  expect(restoredAuth.currentUser()?.role)
+    .toBe('student');
+
+  restoredAuth.logout();
+});
+
+it('should clear registered student session on logout', () => {
+  const auth = new Auth();
+
+  auth.register(
+    'Ahmed Mohamed',
+    'ahmed.logout@example.com',
+    'Student123!'
+  );
+
+  auth.logout();
+
+  expect(auth.isLoggedIn()).toBeFalse();
+
+  expect(
+    sessionStorage.getItem('campus-finance-demo-user')
+  ).toBeNull();
+
+  expect(
+    sessionStorage.getItem('campus-finance-demo-registration')
+  ).toBeNull();
+});
+
+it('should reject a tampered registered student role', () => {
+  const auth = new Auth();
+
+  auth.register(
+    'Ahmed Mohamed',
+    'ahmed.test@example.com',
+    'Student123!'
+  );
+
+  const sessionKey = 'campus-finance-demo-user';
+
+  const saved = JSON.parse(
+    sessionStorage.getItem(sessionKey)!
+  );
+
+  saved.role = 'admin';
+
+  sessionStorage.setItem(
+    sessionKey,
+    JSON.stringify(saved)
+  );
+
+  const restoredAuth = new Auth();
+
+  expect(restoredAuth.isLoggedIn()).toBeFalse();
+  expect(sessionStorage.getItem(sessionKey)).toBeNull();
+});
 });
