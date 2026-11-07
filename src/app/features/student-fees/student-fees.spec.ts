@@ -106,4 +106,65 @@ describe('StudentFees', () => {
     expect(component.filteredInvoices().length).toBe(1);
     expect(component.filteredInvoices()[0].id).toBe('INV002');
   });
+  
+it('should allow accounting to create a new invoice', () => {
+  auth.login('accounting@demo.test', 'Accounting123!');
+
+  const fixture = TestBed.createComponent(StudentFees);
+  const component = fixture.componentInstance;
+
+  component.invoiceForm.patchValue({
+    studentId: 'STU001',
+    type: 'tuition',
+    description: 'Library Fees',
+    amount: 1500,
+    dueDate: '2026-12-20',
+  });
+
+  component.addInvoice();
+
+  expect(invoices.getStudentInvoices('STU001').length).toBe(4);
+  expect(component.successMessage()).toContain('created successfully');
+});
+
+it('should prevent students from creating invoices', () => {
+  auth.login('student@demo.test', 'Student123!');
+
+  const fixture = TestBed.createComponent(StudentFees);
+  const component = fixture.componentInstance;
+
+  component.invoiceForm.patchValue({
+    studentId: 'STU001',
+    type: 'tuition',
+    description: 'Library Fees',
+    amount: 1500,
+    dueDate: '2026-12-20',
+  });
+
+  component.addInvoice();
+
+  expect(invoices.invoices().length).toBe(3);
+  expect(component.invoiceError()).toContain('not authorized');
+});
+
+it('should reject invalid invoice form values', () => {
+  auth.login('accounting@demo.test', 'Accounting123!');
+
+  const fixture = TestBed.createComponent(StudentFees);
+  const component = fixture.componentInstance;
+
+  component.invoiceForm.patchValue({
+    studentId: 'STU001',
+    type: 'tuition',
+    description: 'Library Fees',
+    amount: -100,
+    dueDate: '',
+  });
+
+  component.addInvoice();
+
+  expect(component.invoiceForm.invalid).toBeTrue();
+  expect(invoices.invoices().length).toBe(3);
+});
+
 });

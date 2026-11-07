@@ -48,6 +48,146 @@
 
     </div>
 
+@if (canManageInvoices()) {
+  <section class="mb-8 rounded-2xl border border-outline bg-surface p-6 shadow-sm">
+
+    <div class="mb-6">
+      <h2 class="text-xl font-bold text-heading">
+        Create New Invoice
+      </h2>
+      <p class="mt-1 text-sm text-muted">
+        Add a new tuition or meal-plan invoice.
+      </p>
+    </div>
+
+    <form
+      [formGroup]="invoiceForm"
+      (ngSubmit)="addInvoice()"
+      class="grid gap-4 md:grid-cols-2"
+    >
+
+      <div>
+        <label for="studentId" class="mb-2 block text-sm font-medium text-body">
+          Student ID
+        </label>
+        <input
+          id="studentId"
+          formControlName="studentId"
+          placeholder="STU001"
+          class="w-full rounded-lg border border-outline bg-white p-3"
+        />
+
+        @if (
+          invoiceForm.controls.studentId.touched &&
+          invoiceForm.controls.studentId.invalid
+        ) {
+          <p class="mt-1 text-sm text-danger">
+            Enter a valid Student ID.
+          </p>
+        }
+      </div>
+
+      <div>
+        <label for="invoiceType" class="mb-2 block text-sm font-medium text-body">
+          Invoice Type
+        </label>
+        <select
+          id="invoiceType"
+          formControlName="type"
+          class="w-full rounded-lg border border-outline bg-white p-3"
+        >
+          <option value="tuition">Tuition</option>
+          <option value="meal-plan">Meal Plan</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="description" class="mb-2 block text-sm font-medium text-body">
+          Description
+        </label>
+        <input
+          id="description"
+          formControlName="description"
+          placeholder="e.g. Spring Semester Tuition"
+          class="w-full rounded-lg border border-outline bg-white p-3"
+        />
+
+        @if (
+          invoiceForm.controls.description.touched &&
+          invoiceForm.controls.description.invalid
+        ) {
+          <p class="mt-1 text-sm text-danger">
+            Description must contain at least 3 characters.
+          </p>
+        }
+      </div>
+
+      <div>
+        <label for="amount" class="mb-2 block text-sm font-medium text-body">
+          Amount (EGP)
+        </label>
+        <input
+          id="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          formControlName="amount"
+          class="w-full rounded-lg border border-outline bg-white p-3"
+        />
+
+        @if (
+          invoiceForm.controls.amount.touched &&
+          invoiceForm.controls.amount.invalid
+        ) {
+          <p class="mt-1 text-sm text-danger">
+            Amount must be greater than zero.
+          </p>
+        }
+      </div>
+
+      <div>
+        <label for="dueDate" class="mb-2 block text-sm font-medium text-body">
+          Due Date
+        </label>
+        <input
+          id="dueDate"
+          type="date"
+          formControlName="dueDate"
+          class="w-full rounded-lg border border-outline bg-white p-3"
+        />
+
+        @if (
+          invoiceForm.controls.dueDate.touched &&
+          invoiceForm.controls.dueDate.invalid
+        ) {
+          <p class="mt-1 text-sm text-danger">
+            Due date is required.
+          </p>
+        }
+      </div>
+
+      @if (invoiceError()) {
+        <p
+          class="md:col-span-2 rounded-lg bg-danger-soft p-3 text-sm text-danger"
+          role="alert"
+        >
+          {{ invoiceError() }}
+        </p>
+      }
+
+      <div class="md:col-span-2">
+        <button
+          type="submit"
+          class="rounded-lg bg-primary px-6 py-3 font-semibold text-white hover:bg-primary-hover"
+        >
+          Create Invoice
+        </button>
+      </div>
+
+    </form>
+  </section>
+}
+
     <div class="overflow-hidden rounded-2xl border border-outline bg-surface shadow-sm">
 
       <div class="flex flex-col gap-4 border-b border-outline p-6 md:flex-row md:items-center md:justify-between">

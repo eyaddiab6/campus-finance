@@ -1,7 +1,8 @@
 
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import type { InvoiceType } from '../../core/models/campus.models';
 import { Auth } from '../../core/services/auth';
 import { Invoices } from '../../core/services/invoices';
 import type { InvoiceStatus } from '../../core/models/campus.models';
@@ -10,13 +11,70 @@ type StatusFilter = 'all' | InvoiceStatus;
 
 @Component({
   selector: 'app-student-fees',
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, ReactiveFormsModule],
   templateUrl: './student-fees.html',
   styleUrl: './student-fees.scss',
 })
 export class StudentFees {
   readonly auth = inject(Auth);
   readonly invoicesService = inject(Invoices);
+
+private readonly fb = inject(FormBuilder);
+
+readonly invoiceError = signal('');
+
+readonly invoiceForm = this.fb.nonNullable.group({
+  studentId: ['', [
+    Validators.required,
+    Validators.minLength(3),
+  ]],
+  type: this.fb.nonNullable.control<InvoiceType>('tuition'),
+  description: ['', [
+    Validators.required,
+    Validators.minLength(3),
+  ]],
+  amount: [0, [
+    Validators.required,
+    Validators.min(0.01),
+  ]],
+  dueDate: ['', Validators.required],
+});
+
+addInvoice(): void {
+  this.invoiceError.set('');
+  this.successMessage.set('');
+
+  if (!this.canManageInvoices()) {
+    this.invoiceError.set('You are not authorized to create invoices.');
+    return;
+  }
+
+  if (this.invoiceForm.invalid) {
+    this.invoiceForm.markAllAsTouched();
+    return;
+  }
+
+  const data = this.invoiceForm.getRawValue();
+
+  const invoice = this.invoicesService.addInvoice(
+    data.studentId,
+    data.type,
+    data.description,
+    data.amount,
+    data.dueDate
+  );
+
+  if (!invoice) {
+    this.invoiceError.set('Invalid invoice information.');
+    return;
+  }
+
+  this.successMessage.set(
+    `Invoice ${invoice.id} created successfully.`
+  );
+
+  this.invoiceForm.reset();
+}
 
   readonly searchQuery = signal('');
   readonly statusFilter = signal<StatusFilter>('all');
