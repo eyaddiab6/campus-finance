@@ -1,1 +1,202 @@
-<p>department-budget works!</p>
+
+<div class="budget-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">FINANCE MANAGEMENT</p>
+      <h1>Department Budget</h1>
+      <p class="subtitle">
+        Monitor departmental income, expenses, and financial performance.
+      </p>
+    </div>
+
+    <button class="report-button" (click)="downloadReport()">
+      Download JSON Report
+    </button>
+  </div>
+
+  @if (message) {
+    <div class="success-message">{{ message }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-message">{{ errorMessage }}</div>
+  }
+
+  <section class="summary-grid">
+    <div class="summary-card income-card">
+      <span>Total Income</span>
+      <strong>{{ totalIncome | number:'1.2-2' }} EGP</strong>
+      <small>{{ incomeCount }} income records</small>
+    </div>
+
+    <div class="summary-card expense-card">
+      <span>Total Expenses</span>
+      <strong>{{ totalExpenses | number:'1.2-2' }} EGP</strong>
+      <small>{{ expenseCount }} expense records</small>
+    </div>
+
+    <div class="summary-card balance-card">
+      <span>Remaining Balance</span>
+      <strong>{{ remainingBalance | number:'1.2-2' }} EGP</strong>
+      <small>Income minus expenses</small>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Add Financial Record</h2>
+        <p>Register new departmental income or expenses.</p>
+      </div>
+    </div>
+
+    <div class="record-form">
+      <label>
+        Record Type
+        <select [(ngModel)]="recordType">
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+      </label>
+
+      <label>
+        Category
+        <input
+          type="text"
+          [(ngModel)]="category"
+          placeholder="e.g. Equipment, Tuition"
+        />
+      </label>
+
+      <label>
+        Amount (EGP)
+        <input
+          type="number"
+          min="0"
+          [(ngModel)]="amount"
+          placeholder="Enter amount"
+        />
+      </label>
+
+      <label>
+        Date
+        <input type="date" [(ngModel)]="date" />
+      </label>
+
+      <label class="description-field">
+        Description
+        <input
+          type="text"
+          [(ngModel)]="description"
+          placeholder="Describe this financial record"
+        />
+      </label>
+
+      <button class="primary-button" (click)="addRecord()">
+        Add Record
+      </button>
+    </div>
+  </section>
+
+  <section class="charts-grid">
+    <div class="panel chart-panel">
+      <div class="section-heading">
+        <div>
+          <h2>Income vs Expenses</h2>
+          <p>Financial distribution for the selected month.</p>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas #incomeExpenseCanvas></canvas>
+      </div>
+    </div>
+
+    <div class="panel chart-panel">
+      <div class="section-heading">
+        <div>
+          <h2>Expenses by Category</h2>
+          <p>See where departmental funds are spent.</p>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas #categoryCanvas></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-heading records-heading">
+      <div>
+        <h2>Financial Records</h2>
+        <p>Review and manage all registered transactions.</p>
+      </div>
+
+      <label class="month-filter">
+        Filter by month
+        <input
+          type="month"
+          [(ngModel)]="selectedMonth"
+          (ngModelChange)="changeMonth()"
+        />
+      </label>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (record of filteredRecords; track record.id) {
+            <tr>
+              <td>{{ record.date }}</td>
+              <td><strong>{{ record.category }}</strong></td>
+              <td>{{ record.description }}</td>
+              <td>
+                <span
+                  class="record-type"
+                  [class.income]="record.type === 'income'"
+                  [class.expense]="record.type === 'expense'"
+                >
+                  {{ record.type }}
+                </span>
+              </td>
+              <td
+                class="amount"
+                [class.income-text]="record.type === 'income'"
+                [class.expense-text]="record.type === 'expense'"
+              >
+                {{ record.type === 'income' ? '+' : '-' }}
+                {{ record.amount | number:'1.2-2' }} EGP
+              </td>
+              <td>
+                <button
+                  class="delete-button"
+                  (click)="deleteRecord(record.id)"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="empty-message">
+                No financial records found for this month.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
