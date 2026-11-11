@@ -1,1 +1,157 @@
-<p>food-ordering works!</p>
+<main class="store-page">
+  <header class="page-heading">
+    <p class="eyebrow">CAMPUS CAFETERIA</p>
+    <h1>Food Store</h1>
+    <p>Browse the menu and add your favorites to the cart.</p>
+  </header>
+
+  @if (error) {
+    <p class="feedback error" role="alert">{{ error }}</p>
+  }
+  @if (message) {
+    <p class="feedback success" role="status">{{ message }}</p>
+  }
+
+  <div class="store-layout">
+    <section class="catalog-section" aria-labelledby="catalog-title">
+      <div class="toolbar">
+        <label class="search-field">
+          <span>Search menu</span>
+          <input
+            type="search"
+            placeholder="Search food or category"
+            [value]="searchTerm"
+            (input)="setSearch($any($event.target).value)"
+          />
+        </label>
+
+        <label class="category-field">
+          <span>Category</span>
+          <select
+            [value]="selectedCategory"
+            (change)="setCategory($any($event.target).value)"
+          >
+            @for (category of categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <h2 id="catalog-title">Menu</h2>
+          <p>Fresh picks from the campus cafeteria</p>
+        </div>
+        <span class="item-count">{{ filteredItems.length }} items</span>
+      </div>
+
+      @if (filteredItems.length === 0) {
+        <div class="empty-state">
+          <h3>No menu items found</h3>
+          <p>Try another search term or choose a different category.</p>
+        </div>
+      } @else {
+        <div class="product-grid">
+          @for (item of filteredItems; track item.id) {
+            <article class="product-card">
+              <div class="product-visual" aria-hidden="true">
+                <span>{{ item.category }}</span>
+              </div>
+              <div class="product-info">
+                <div class="product-heading">
+                  <div>
+                    <p class="product-category">{{ item.category }}</p>
+                    <h3>{{ item.name }}</h3>
+                  </div>
+                  <strong class="product-price">
+                    {{ item.price | currency: 'EGP' : 'symbol' : '1.2-2' }}
+                  </strong>
+                </div>
+
+                <div class="product-actions">
+                  @if (item.available) {
+                    <span class="availability available">Available</span>
+                    <button type="button" (click)="addItem(item)">
+                      Add to cart
+                    </button>
+                  } @else {
+                    <span class="availability unavailable">Unavailable</span>
+                    <button type="button" disabled>Unavailable</button>
+                  }
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+
+    <aside class="cart-panel" aria-labelledby="cart-title">
+      <div class="cart-heading">
+        <div>
+          <p class="eyebrow">YOUR ORDER</p>
+          <h2 id="cart-title">Shopping cart</h2>
+        </div>
+        <span class="cart-count">{{ cart.length }}</span>
+      </div>
+
+      @if (cart.length === 0) {
+        <div class="cart-empty">
+          <p>Your cart is empty</p>
+          <span>Add an item from the menu to get started.</span>
+        </div>
+      } @else {
+        <ul class="cart-list">
+          @for (line of cart; track line.foodItem.id) {
+            <li class="cart-line">
+              <div class="cart-line-info">
+                <strong>{{ line.foodItem.name }}</strong>
+                <span>
+                  {{ line.foodItem.price | currency: 'EGP' : 'symbol' : '1.2-2' }}
+                  each
+                </span>
+              </div>
+
+              <div class="quantity-control">
+                <label [for]="'quantity-' + line.foodItem.id">Qty</label>
+                <input
+                  [id]="'quantity-' + line.foodItem.id"
+                  type="number"
+                  min="1"
+                  step="1"
+                  [value]="line.quantity"
+                  (change)="
+                    changeQuantity(
+                      line.foodItem.id,
+                      $any($event.target).valueAsNumber
+                    )
+                  "
+                />
+              </div>
+
+              <button
+                class="remove-button"
+                type="button"
+                (click)="removeItem(line.foodItem.id)"
+                [attr.aria-label]="'Remove ' + line.foodItem.name + ' from cart'"
+              >
+                Remove
+              </button>
+            </li>
+          }
+        </ul>
+
+        <div class="cart-total">
+          <span>Total</span>
+          <strong>{{ cartTotal | currency: 'EGP' : 'symbol' : '1.2-2' }}</strong>
+        </div>
+
+        <button class="checkout-button" type="button" (click)="checkout()">
+          Checkout with wallet
+        </button>
+        <p class="checkout-note">Payment will be deducted from your demo wallet.</p>
+      }
+    </aside>
+  </div>
+</main>

@@ -1,1 +1,153 @@
-<p>cafeteria-orders works!</p>
+
+<div class="orders-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">CAFETERIA MANAGEMENT</p>
+      <h1>Cafeteria Orders</h1>
+      <p class="subtitle">
+        Monitor student orders and manage their preparation status.
+      </p>
+    </div>
+  </div>
+
+  @if (message) {
+    <div class="success-message">{{ message }}</div>
+  }
+
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span>Total Orders</span>
+      <strong>{{ totalOrders }}</strong>
+      <small>All registered orders</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Pending Orders</span>
+      <strong>{{ pendingOrders }}</strong>
+      <small>Waiting for preparation</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Active Orders</span>
+      <strong>{{ activeOrders }}</strong>
+      <small>Preparing or ready</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Completed Revenue</span>
+      <strong>{{ completedRevenue | number:'1.2-2' }} EGP</strong>
+      <small>From completed orders</small>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Order Management</h2>
+        <p>Search orders and update their status.</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <input
+        type="text"
+        [(ngModel)]="searchText"
+        placeholder="Search by order ID or student..."
+        aria-label="Search orders"
+      />
+
+      <select [(ngModel)]="selectedStatus" aria-label="Filter by status">
+        <option value="all">All statuses</option>
+        @for (status of statuses; track status) {
+          <option [value]="status">{{ status | titlecase }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Student</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Update Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (order of filteredOrders; track order.id) {
+            <tr>
+              <td><strong>{{ order.id }}</strong></td>
+
+              <td>
+                <strong>{{ order.studentName }}</strong>
+                <small class="student-id">{{ order.studentId }}</small>
+              </td>
+
+              <td class="items-cell">{{ getOrderItems(order) }}</td>
+
+              <td class="amount">
+                {{ order.totalAmount | number:'1.2-2' }} EGP
+              </td>
+
+              <td>{{ order.createdAt | date:'short' }}</td>
+
+              <td>
+                <span
+                  class="status"
+                  [class.pending]="order.status === 'pending'"
+                  [class.preparing]="order.status === 'preparing'"
+                  [class.ready]="order.status === 'ready'"
+                  [class.completed]="order.status === 'completed'"
+                  [class.cancelled]="order.status === 'cancelled'"
+                >
+                  {{ order.status | titlecase }}
+                </span>
+              </td>
+
+              <td>
+                @if (getNextStatus(order.status); as nextStatus) {
+                  <button
+                    class="update-button"
+                    (click)="updateStatus(order, nextStatus)"
+                  >
+                    {{ nextStatus | titlecase }}
+                  </button>
+                } @else {
+                  <span class="finished-text">No further action</span>
+                }
+              </td>
+
+              <td>
+                @if (
+                  order.status !== 'completed' &&
+                  order.status !== 'cancelled'
+                ) {
+                  <button
+                    class="cancel-button"
+                    (click)="cancelOrder(order)"
+                  >
+                    Cancel
+                  </button>
+                } @else {
+                  <span class="finished-text">Finished</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-message">
+                No orders match your search or selected status.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
