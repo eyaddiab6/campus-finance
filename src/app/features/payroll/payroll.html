@@ -1,1 +1,260 @@
-<p>payroll works!</p>
+
+<div class="payroll-page">
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">FINANCE MANAGEMENT</p>
+      <h1>Staff Payroll</h1>
+      <p class="subtitle">
+        Manage employee salaries and monthly payroll records.
+      </p>
+    </div>
+
+    <button class="report-button" (click)="downloadMonthlyReport()">
+      Download JSON Report
+    </button>
+  </div>
+
+  @if (message) {
+    <div class="success-message">{{ message }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-message">{{ errorMessage }}</div>
+  }
+
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span>Total Payroll</span>
+      <strong>{{ totalPayroll | number:'1.2-2' }} EGP</strong>
+      <small>For selected month</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Pending Payments</span>
+      <strong>{{ pendingPayroll | number:'1.2-2' }} EGP</strong>
+      <small>Awaiting payment</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Paid Salaries</span>
+      <strong>{{ paidPayroll | number:'1.2-2' }} EGP</strong>
+      <small>Successfully paid</small>
+    </div>
+
+    <div class="summary-card">
+      <span>Employees</span>
+      <strong>{{ employees.length }}</strong>
+      <small>Registered staff members</small>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Employee Management</h2>
+        <p>Select an employee to update their salary.</p>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Search employees..."
+        [(ngModel)]="searchText"
+        aria-label="Search employees"
+      />
+    </div>
+
+    <div class="employee-list">
+      @for (employee of filteredEmployees; track employee.id) {
+        <button
+          class="employee-item"
+          [class.selected]="selectedEmployeeId === employee.id"
+          (click)="selectEmployee(employee)"
+        >
+          <span class="employee-avatar">
+            {{ employee.fullName.charAt(0) }}
+          </span>
+
+          <span class="employee-info">
+            <strong>{{ employee.fullName }}</strong>
+            <small>{{ employee.id }}</small>
+          </span>
+
+          <strong class="employee-salary">
+            {{ employee.baseSalary | number:'1.2-2' }} EGP
+          </strong>
+        </button>
+      } @empty {
+        <p class="empty-message">No employees found.</p>
+      }
+    </div>
+
+    @if (selectedEmployee) {
+      <div class="salary-editor">
+        <div>
+          <h3>Update Base Salary</h3>
+          <p>Employee: {{ selectedEmployee.fullName }}</p>
+        </div>
+
+        <div class="salary-form">
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="newBaseSalary"
+            aria-label="New base salary"
+          />
+
+          <button class="primary-button" (click)="updateBaseSalary()">
+            Save Salary
+          </button>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Generate Monthly Payroll</h2>
+        <p>Calculate an employee's net salary.</p>
+      </div>
+    </div>
+
+    @if (selectedEmployee) {
+      <div class="selected-employee">
+        <span>Selected employee</span>
+        <strong>{{ selectedEmployee.fullName }}</strong>
+        <span>
+          Base salary:
+          {{ selectedEmployee.baseSalary | number:'1.2-2' }} EGP
+        </span>
+      </div>
+
+      <div class="payroll-form">
+        <label>
+          Payroll Month
+          <input type="month" [(ngModel)]="selectedMonth" />
+        </label>
+
+        <label>
+          Allowances (EGP)
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="allowance"
+          />
+        </label>
+
+        <label>
+          Deductions (EGP)
+          <input
+            type="number"
+            min="0"
+            [(ngModel)]="deductions"
+          />
+        </label>
+
+        <div class="calculation">
+          <span>Estimated Net Salary</span>
+          <strong>
+            {{ (selectedEmployee.baseSalary + allowance - deductions) | number:'1.2-2' }} EGP
+          </strong>
+        </div>
+
+        <button
+          class="primary-button generate-button"
+          (click)="generatePayroll()"
+        >
+          Generate Payroll
+        </button>
+      </div>
+    } @else {
+      <p class="empty-message">
+        No employees available.
+      </p>
+    }
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Payroll Records</h2>
+        <p>Review and manage employee salary payments.</p>
+      </div>
+
+      <label class="month-filter">
+        Filter by month
+        <input type="month" [(ngModel)]="filterMonth" />
+      </label>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Month</th>
+            <th>Base Salary</th>
+            <th>Allowance</th>
+            <th>Deductions</th>
+            <th>Net Salary</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (record of filteredRecords; track record.id) {
+            <tr>
+              <td>
+                <strong>{{ getEmployeeName(record.employeeId) }}</strong>
+                <small class="table-id">{{ record.employeeId }}</small>
+              </td>
+
+              <td>{{ record.month }}</td>
+
+              <td>
+                {{ getBaseSalary(record.employeeId) | number:'1.2-2' }}
+              </td>
+
+              <td>{{ record.shiftAllowance | number:'1.2-2' }}</td>
+
+              <td>{{ record.deductions | number:'1.2-2' }}</td>
+
+              <td class="net-salary">
+                {{ record.netSalary | number:'1.2-2' }} EGP
+              </td>
+
+              <td>
+                <span
+                  class="status"
+                  [class.paid]="record.status === 'paid'"
+                >
+                  {{ record.status }}
+                </span>
+              </td>
+
+              <td>
+                @if (record.status === 'pending') {
+                  <button
+                    class="paid-button"
+                    (click)="markAsPaid(record)"
+                  >
+                    Mark Paid
+                  </button>
+                } @else {
+                  <span class="completed-text">Completed</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-message">
+                No payroll records found for this month.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
