@@ -14,7 +14,7 @@ export class Auth {
   private readonly sessionKey = 'campus-finance-demo-user';
   private readonly registrationKey = 'campus-finance-demo-registration';
 
-  // Demo credentials only — never use real passwords.
+  // Demo credentials only Ã¢â‚¬â€ never use real passwords.
   private readonly demoAccounts = [
     { email: 'student@demo.test', password: 'Student123!', role: 'student' },
     { email: 'accounting@demo.test', password: 'Accounting123!', role: 'accounting' },
@@ -54,6 +54,7 @@ export class Auth {
 
     // Remove any previous temporary registration.
     sessionStorage.removeItem(this.registrationKey);
+    sessionStorage.removeItem('campus-finance-signup-profile');
 
     return {
       success: true,
@@ -134,6 +135,7 @@ export class Auth {
     this.currentUser.set(null);
     sessionStorage.removeItem(this.sessionKey);
     sessionStorage.removeItem(this.registrationKey);
+    sessionStorage.removeItem('campus-finance-signup-profile');
   }
 
   isLoggedIn(): boolean {

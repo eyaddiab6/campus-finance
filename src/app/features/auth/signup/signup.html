@@ -1,148 +1,90 @@
-<main class="min-h-screen bg-canvas px-4 py-10">
-
-  <section class="mx-auto max-w-lg rounded-2xl
-                  bg-surface p-8 shadow-xl">
-
-    <div class="mb-8 text-center">
-      <div class="mx-auto mb-4 flex h-14 w-14
-                  items-center justify-center
-                  rounded-xl bg-primary text-xl
-                  font-bold text-white">
-        CF
-      </div>
-
-      <h1 class="text-3xl font-bold text-heading">
-        Create Account
-      </h1>
-
-      <p class="mt-2 text-muted">
-        Join Campus Finance as a student
-      </p>
+<main class="min-h-screen bg-canvas px-4 py-10 text-body">
+  <section class="mx-auto max-w-xl rounded-2xl bg-surface p-5 shadow-xl sm:p-8">
+    <div class="mb-7 text-center">
+      <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-xl font-bold text-white">CF</div>
+      <h1 class="text-3xl font-bold text-heading">Create Student Account</h1>
+      <p class="mt-2 text-muted">Milestone 1 - temporary frontend demo registration</p>
     </div>
 
-    <form [formGroup]="signupForm"
-          (ngSubmit)="onSubmit()"
-          class="space-y-5">
-
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="space-y-5">
       <div>
-        <label for="fullName" class="mb-2 block font-medium text-body">
-          Full Name
-        </label>
-        <input id="fullName" formControlName="fullName"
-               autocomplete="name"
-               placeholder="Enter your full name"
-               class="w-full rounded-lg border border-outline
-                      p-3 focus:border-primary focus:outline-none">
-
-        @if (signupForm.controls.fullName.touched &&
-             signupForm.controls.fullName.invalid) {
-          <p class="mt-1 text-sm text-danger">
-            Name must contain at least 3 characters.
-          </p>
+        <label for="username" class="mb-2 block font-medium">Username <span aria-hidden="true">*</span></label>
+        <input id="username" formControlName="username" autocomplete="username" placeholder="e.g. student_01"
+               class="w-full rounded-lg border border-outline bg-surface p-3" />
+        @if (signupForm.controls.username.touched && signupForm.controls.username.invalid) {
+          <p class="mt-1 text-sm text-danger">Use 3-20 letters, numbers or underscores.</p>
         }
       </div>
-
       <div>
-        <label for="email" class="mb-2 block font-medium text-body">
-          Email Address
-        </label>
-        <input id="email" type="email"
-               formControlName="email"
-               autocomplete="email"
-               placeholder="student@example.com"
-               class="w-full rounded-lg border border-outline
-                      p-3 focus:border-primary focus:outline-none">
-
-        @if (signupForm.controls.email.touched &&
-             signupForm.controls.email.invalid) {
-          <p class="mt-1 text-sm text-danger">
-            Enter a valid email address.
-          </p>
+        <label for="fullName" class="mb-2 block font-medium">Full name <span aria-hidden="true">*</span></label>
+        <input id="fullName" formControlName="fullName" autocomplete="name" placeholder="Enter your full name"
+               class="w-full rounded-lg border border-outline bg-surface p-3" />
+        @if (signupForm.controls.fullName.touched && signupForm.controls.fullName.invalid) {
+          <p class="mt-1 text-sm text-danger">Enter at least 3 characters.</p>
         }
       </div>
-
       <div>
-        <label for="password" class="mb-2 block font-medium text-body">
-          Password
-        </label>
-        <input id="password" type="password"
-               formControlName="password"
-               autocomplete="new-password"
-               placeholder="Minimum 8 characters"
-               class="w-full rounded-lg border border-outline
-                      p-3 focus:border-primary focus:outline-none">
-
-        @if (signupForm.controls.password.touched &&
-             signupForm.controls.password.invalid) {
-          <p class="mt-1 text-sm text-danger">
-            Password must be at least 8 characters.
-          </p>
+        <label for="email" class="mb-2 block font-medium">Email <span aria-hidden="true">*</span></label>
+        <input id="email" type="email" formControlName="email" autocomplete="email"
+               class="w-full rounded-lg border border-outline bg-surface p-3" />
+        @if (signupForm.controls.email.touched && signupForm.controls.email.invalid) {
+          <p class="mt-1 text-sm text-danger">Enter a valid email address.</p>
         }
       </div>
-
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="password" class="mb-2 block font-medium">Password <span aria-hidden="true">*</span></label>
+          <input id="password" type="password" formControlName="password" autocomplete="new-password"
+                 class="w-full rounded-lg border border-outline bg-surface p-3" />
+          @if (signupForm.controls.password.touched && signupForm.controls.password.invalid) {
+            <p class="mt-1 text-sm text-danger">Minimum 8 characters.</p>
+          }
+        </div>
+        <div>
+          <label for="confirmPassword" class="mb-2 block font-medium">Confirm password <span aria-hidden="true">*</span></label>
+          <input id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password"
+                 class="w-full rounded-lg border border-outline bg-surface p-3" />
+          @if (signupForm.controls.confirmPassword.touched && signupForm.hasError('passwordMismatch')) {
+            <p class="mt-1 text-sm text-danger">Passwords do not match.</p>
+          }
+        </div>
+      </div>
       <div>
-        <label for="confirmPassword"
-               class="mb-2 block font-medium text-body">
-          Confirm Password
-        </label>
-        <input id="confirmPassword" type="password"
-               formControlName="confirmPassword"
-               autocomplete="new-password"
-               placeholder="Repeat your password"
-               class="w-full rounded-lg border border-outline
-                      p-3 focus:border-primary focus:outline-none">
-
-        @if (signupForm.controls.confirmPassword.touched &&
-             signupForm.hasError('passwordMismatch')) {
-          <p class="mt-1 text-sm text-danger">
-            Passwords do not match.
-          </p>
+        <label for="picture" class="mb-2 block font-medium">Profile picture (optional)</label>
+        <input id="picture" type="file" accept="image/png,image/jpeg,image/webp" (change)="onPictureSelected($event)"
+               class="block w-full rounded-lg border border-outline bg-surface p-3 text-sm" />
+        <p class="mt-1 text-xs text-muted">PNG/JPEG/WebP under 200 KB; saved only in this tab's demo session.</p>
+        @if (avatarPreview()) {
+          <img [src]="avatarPreview()" alt="Your selected profile picture" class="mt-2 h-20 w-20 rounded-full object-cover" />
         }
       </div>
-
       <div>
-        <label for="preferences"
-               class="mb-2 block font-medium text-body">
-          Food Preferences (Optional)
-        </label>
-        <select id="preferences" formControlName="preferences"
-                class="w-full rounded-lg border border-outline
-                       bg-white p-3">
-          <option value="">No preference</option>
-          <option value="vegetarian">Vegetarian</option>
-          <option value="high-protein">High Protein</option>
+        <label for="cardLast4" class="mb-2 block font-medium">Demo credit card - last 4 digits only (optional)</label>
+        <input id="cardLast4" type="text" formControlName="cardLast4" inputmode="numeric" maxlength="4" placeholder="1234"
+               class="w-full rounded-lg border border-outline bg-surface p-3" />
+        @if (signupForm.controls.cardLast4.touched && signupForm.controls.cardLast4.invalid) {
+          <p class="mt-1 text-sm text-danger">Enter exactly 4 digits, or leave blank.</p>
+        }
+        <p class="mt-1 text-xs text-muted">Use fictional data only. Never enter a real card number, expiry date or CVV.</p>
+      </div>
+      <div>
+        <label for="preferences" class="mb-2 block font-medium">Food preferences</label>
+        <select id="preferences" formControlName="preferences" class="w-full rounded-lg border border-outline bg-surface p-3">
           <option value="regular">Regular</option>
+          <option value="vegetarian">Vegetarian</option>
+          <option value="high-protein">High protein</option>
         </select>
+        <p class="mt-1 text-xs text-muted">This non-sensitive preference is also remembered in a cookie.</p>
       </div>
-
-      @if (errorMessage()) {
-        <p class="rounded-lg bg-danger-soft p-3 text-danger"
-           role="alert">
-          {{ errorMessage() }}
-        </p>
-      }
-
-      <button type="submit"
-              [disabled]="isSubmitting()"
-              class="w-full rounded-lg bg-primary
-                     px-5 py-3 font-semibold text-white
-                     hover:bg-primary-hover
-                     disabled:opacity-50">
-        {{ isSubmitting() ? 'Creating Account...' : 'Create Account' }}
+      @if (errorMessage()) { <p class="rounded-lg bg-danger-soft p-3 text-danger" role="alert">{{ errorMessage() }}</p> }
+      <button type="submit" [disabled]="isSubmitting()"
+              class="w-full rounded-lg bg-primary px-5 py-3 font-semibold text-white hover:bg-primary-hover disabled:opacity-50">
+        {{ isSubmitting() ? 'Creating account...' : 'Create Account' }}
       </button>
     </form>
-
-    <p class="mt-6 text-center text-sm text-muted">
-      Already have an account?
-      <a routerLink="/login"
-         class="font-semibold text-primary hover:underline">
-        Sign In
-      </a>
+    <p class="mt-6 text-center text-sm text-muted">Already have an account?
+      <a routerLink="/login" class="font-semibold text-primary hover:underline">Sign in</a>
     </p>
-
-    <p class="mt-5 text-center text-xs text-muted">
-      Demo registration only. Do not use a real password.
-    </p>
-
+    <p class="mt-4 text-center text-xs text-muted">Educational frontend only; no real accounts, passwords or payments are stored on a server.</p>
   </section>
 </main>
