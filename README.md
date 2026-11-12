@@ -1,4 +1,4 @@
-# Campus Finance — University Finance & Cafeteria Management MVP
+# Campus Finance â€” University Finance & Cafeteria Management MVP
 
 A role-based, frontend-only Angular application demonstrating selected university finance and cafeteria workflows: student tuition invoices, a digital wallet, food ordering, meal subscriptions, employee payroll, budget reporting, and cafeteria order fulfillment.
 
@@ -6,9 +6,9 @@ A role-based, frontend-only Angular application demonstrating selected universit
 
 ## Project overview
 
-**University:** German International University (GIU)  
-**Team:** Eyad, Yassin, Ali  
-**Code:** [GitHub repository](https://github.com/eyaddiab6/campus-finance)  
+**University:** German International University (GIU)
+**Team:** Eyad, Yassin, Ali
+**Code:** [GitHub repository](https://github.com/eyaddiab6/campus-finance)
 **Main application:** Angular 22 (standalone components), TypeScript, Tailwind CSS v4, SCSS, Angular forms, Chart.js, Jasmine and Karma.
 
 ### Features and access
@@ -72,7 +72,7 @@ The latest **reported local verification**, on 11 November 2026 after merging PR
 1. Sign in as Student. Visit Wallet and inspect the demo balance; optionally add demo funds.
 2. Open Food Ordering, add an item to the cart and check out. Observe the wallet debit and new pending order.
 3. **Without refreshing the browser tab**, log out; sign in as Cafeteria Staff.
-4. In Cafeteria Orders, find that order and move it through **Pending → Preparing → Ready → Completed**.
+4. In Cafeteria Orders, find that order and move it through **Pending â†’ Preparing â†’ Ready â†’ Completed**.
 5. Log in as Student again, activate a Meal Plan, and visit Student Fees to see its newly created unpaid invoice.
 6. Log in as Accounting or Admin to inspect Student Fees, Payroll and Department Budget.
 
